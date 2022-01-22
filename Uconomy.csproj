@@ -35,86 +35,100 @@
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Lokal|AnyCPU'">
-    <OutputPath>..\..\..\..\Desktop\Unturned\Unturned_Data\Managed\mods\</OutputPath>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
   <ItemGroup>
-    <Reference Include="I18N, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Desktop\Unturned Workshop\plugin addons\I18N.dll</HintPath>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>..\..\Libraries\Assembly-CSharp.dll</HintPath>
     </Reference>
-    <Reference Include="I18N.West, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Desktop\Unturned Workshop\plugin addons\I18N.West.dll</HintPath>
+    <Reference Include="com.rlabrecque.steamworks.net">
+      <HintPath>..\..\Libraries\com.rlabrecque.steamworks.net.dll</HintPath>
     </Reference>
-    <Reference Include="MySql.Data, Version=6.9.8.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Desktop\Unturned Workshop\plugin addons\MySql.Data.dll</HintPath>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="RL-0Harmony">
+      <HintPath>..\..\Libraries\RL-0Harmony.dll</HintPath>
     </Reference>
-    <Reference Include="Rocket.API, Version=4.9.3.4, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Desktop\Unturned Workshop\plugin addons\Rocket.API.dll</HintPath>
+    <Reference Include="RL-BouncyCastle.Crypto">
+      <HintPath>..\..\Libraries\RL-BouncyCastle.Crypto.dll</HintPath>
     </Reference>
-    <Reference Include="Rocket.Core, Version=4.9.3.4, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Desktop\Unturned Workshop\plugin addons\Rocket.Core.dll</HintPath>
+    <Reference Include="RL-Google.Protobuf">
+      <HintPath>..\..\Libraries\RL-Google.Protobuf.dll</HintPath>
     </Reference>
-    <Reference Include="Rocket.Unturned, Version=4.9.3.13, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Desktop\Unturned Workshop\plugin addons\Rocket.Unturned.dll</HintPath>
+    <Reference Include="RL-I18N">
+      <HintPath>..\..\Libraries\RL-I18N.dll</HintPath>
     </Reference>
-    <Reference Include="SDG.NetTransport, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Desktop\Unturned Workshop\plugin addons\SDG.NetTransport.dll</HintPath>
+    <Reference Include="RL-I18N.West">
+      <HintPath>..\..\Libraries\RL-I18N.West.dll</HintPath>
     </Reference>
-    <Reference Include="Steamworks.NET, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Desktop\Unturned Workshop\plugin addons\Steamworks.NET.dll</HintPath>
+    <Reference Include="RL-MySql.Data">
+      <HintPath>..\..\Libraries\RL-MySql.Data.dll</HintPath>
     </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Web.Extensions" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-    <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Desktop\Unturned Workshop\plugin addons\UnityEngine.dll</HintPath>
+    <Reference Include="RL-Newtonsoft.Json">
+      <HintPath>..\..\Libraries\RL-Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Desktop\Unturned Workshop\plugin addons\UnityEngine.CoreModule.dll</HintPath>
+    <Reference Include="RL-Renci.SshNet">
+      <HintPath>..\..\Libraries\RL-Renci.SshNet.dll</HintPath>
+    </Reference>
+    <Reference Include="RL-RestSharp">
+      <HintPath>..\..\Libraries\RL-RestSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="RL-System.Data">
+      <HintPath>..\..\Libraries\RL-System.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="RL-System.Data.DataSetExtensions">
+      <HintPath>..\..\Libraries\RL-System.Data.DataSetExtensions.dll</HintPath>
+    </Reference>
+    <Reference Include="RL-System.Management">
+      <HintPath>..\..\Libraries\RL-System.Management.dll</HintPath>
+    </Reference>
+    <Reference Include="RL-System.Net.Http">
+      <HintPath>..\..\Libraries\RL-System.Net.Http.dll</HintPath>
+    </Reference>
+    <Reference Include="RL-System.Transactions">
+      <HintPath>..\..\Libraries\RL-System.Transactions.dll</HintPath>
+    </Reference>
+    <Reference Include="RL-System.Web">
+      <HintPath>..\..\Libraries\RL-System.Web.dll</HintPath>
+    </Reference>
+    <Reference Include="RL-System.Xml">
+      <HintPath>..\..\Libraries\RL-System.Xml.dll</HintPath>
+    </Reference>
+    <Reference Include="RL-System.Xml.Linq">
+      <HintPath>..\..\Libraries\RL-System.Xml.Linq.dll</HintPath>
+    </Reference>
+    <Reference Include="Rocket.API">
+      <HintPath>..\..\Libraries\Rocket.API.dll</HintPath>
+    </Reference>
+    <Reference Include="Rocket.Core">
+      <HintPath>..\..\Libraries\Rocket.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Rocket.Unturned">
+      <HintPath>..\..\Libraries\Rocket.Unturned.dll</HintPath>
+    </Reference>
+    <Reference Include="SDG.NetTransport">
+      <HintPath>..\..\Libraries\SDG.NetTransport.dll</HintPath>
+    </Reference>
+    <Reference Include="System">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Core">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>..\..\Libraries\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>..\..\Libraries\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.PhysicsModule">
+      <HintPath>..\..\Libraries\UnityEngine.PhysicsModule.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CommandBalance.cs" />
-    <Compile Include="Database.cs" />
-    <Compile Include="CommandPay.cs" />
+    <Compile Include="Commands\CommandBalance.cs" />
+    <Compile Include="DatabaseManager.cs" />
+    <Compile Include="Commands\CommandPay.cs" />
     <Compile Include="UconomyConfiguration.cs" />
     <Compile Include="Uconomy.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Libraries\System.Management.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Libraries\I18N.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Libraries\I18N.West.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Libraries\MySql.Data.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Libraries\System.Data.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Libraries\System.Transactions.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
