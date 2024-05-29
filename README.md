@@ -8,7 +8,7 @@ The updated version of the well known Uconomy plugin.
 
 ### Features
 * Economy System
---- WIP ---
+* **WIP**:
 * Salaries
 * Kill Rewards
 * Death penalties
