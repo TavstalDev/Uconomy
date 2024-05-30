@@ -18,7 +18,7 @@ namespace fr34kyn01535.Uconomy
         {
             if (command.Length != 2)
             {
-                ChatHelper.SendCommandReply(caller, "command_pay_invalid");
+                ChatHelper.SendCommandReply(caller, "command_pay_invalid", Syntax);
                 return;
             }
 
