@@ -2,7 +2,6 @@
 using Rocket.API.Serialisation;
 using Rocket.Core;
 using Rocket.Core.Plugins;
-using Rocket.Unturned;
 using Rocket.Unturned.Player;
 using SDG.Unturned;
 using Steamworks;
