@@ -46,10 +46,13 @@
     <Compile Include="DatabaseManager.cs" />
     <Compile Include="Commands\CommandPay.cs" />
     <Compile Include="Models\ConsoleFormat.cs" />
+    <Compile Include="Models\DeathPenalty.cs" />
+    <Compile Include="Models\KillReward.cs" />
     <Compile Include="Models\TextFormat.cs" />
     <Compile Include="UconomyConfiguration.cs" />
     <Compile Include="Uconomy.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UnturnedEventHandler.cs" />
     <Compile Include="Utils\ChatHelper.cs" />
     <Compile Include="Utils\FormatHelper.cs" />
     <Compile Include="Utils\LoggerHelper.cs" />
