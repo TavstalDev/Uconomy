@@ -8,8 +8,7 @@ The updated version of the well known Uconomy plugin.
 
 ### Features
 * Economy System
-* **WIP**:
-* Salaries
+* Salaries (permission: uconomy.salary.&lt;amount>)
 * Kill Rewards
 * Death penalties
 * ~~Should~~ Works with most of the economy plugins that use Uconomy
@@ -20,7 +19,7 @@ The updated version of the well known Uconomy plugin.
 <> - means <b>optional</b>
 
 <details>
-<summary>/balance <player></summary>
+<summary>/balance &lt;player></summary>
 <b>Description:</b> Shows your or the provided player's balance
 <br>
 <b>Permission(s):</b> uconomy.commands.balance, uconomy.commands.balance.other
@@ -41,7 +40,7 @@ The updated version of the well known Uconomy plugin.
 </details>
 
 <details>
-<summary>/exchange [cash | xp] <amount></summary>
+<summary>/exchange [cash | xp] [amount]</summary>
 <b>Description:</b> Exchanges the provided amount of your balance to the provided currency
 <br>
 <b>Permission(s):</b> uconomy.commands.exchange
