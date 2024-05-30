@@ -68,7 +68,7 @@ namespace fr34kyn01535.Uconomy
 
             decimal amount = reward.Reward;
             Uconomy.Instance.Database.IncreaseBalance(player.Id, amount);
-            ChatHelper.SendChatMessage(player.SteamPlayer(), "kill_reward_msg", amount, Uconomy.Instance.Configuration.Instance.MoneyName;
+            ChatHelper.SendChatMessage(player.SteamPlayer(), "kill_reward_msg", amount, Uconomy.Instance.Configuration.Instance.MoneyName);
         }
     }
 }
