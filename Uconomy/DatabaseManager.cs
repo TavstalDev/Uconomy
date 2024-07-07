@@ -12,6 +12,29 @@ namespace fr34kyn01535.Uconomy
             CheckSchema();
         }
 
+        internal void CheckSchema()
+        {
+            try
+            {
+                MySqlConnection connection = createConnection();
+                MySqlCommand command = connection.CreateCommand();
+                command.CommandText = "show tables like '" + Uconomy.Instance.Configuration.Instance.DatabaseTableName + "'";
+                connection.Open();
+                object test = command.ExecuteScalar();
+
+                if (test == null)
+                {
+                    command.CommandText = "CREATE TABLE `" + Uconomy.Instance.Configuration.Instance.DatabaseTableName + "` (`steamId` varchar(32) NOT NULL,`balance` decimal(15,2) NOT NULL DEFAULT '25.00',`lastUpdated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,PRIMARY KEY (`steamId`)) ";
+                    command.ExecuteNonQuery();
+                }
+                connection.Close();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogException(ex);
+            }
+        }
+
         private MySqlConnection createConnection()
         {
             MySqlConnection connection = null;
@@ -107,29 +130,6 @@ namespace fr34kyn01535.Uconomy
                 Logger.LogException(ex);
             }
 
-        }
-
-        internal void CheckSchema()
-        {
-            try
-            {
-                MySqlConnection connection = createConnection();
-                MySqlCommand command = connection.CreateCommand();
-                command.CommandText = "show tables like '" + Uconomy.Instance.Configuration.Instance.DatabaseTableName + "'";
-                connection.Open();
-                object test = command.ExecuteScalar();
-
-                if (test == null)
-                {
-                    command.CommandText = "CREATE TABLE `" + Uconomy.Instance.Configuration.Instance.DatabaseTableName + "` (`steamId` varchar(32) NOT NULL,`balance` decimal(15,2) NOT NULL DEFAULT '25.00',`lastUpdated` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP,PRIMARY KEY (`steamId`)) ";
-                    command.ExecuteNonQuery();
-                }
-                connection.Close();
-            }
-            catch (Exception ex)
-            {
-                Logger.LogException(ex);
-            }
         }
     }
 }
