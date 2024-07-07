@@ -1,5 +1,6 @@
 ﻿using fr34kyn01535.Uconomy.Models;
 using Rocket.Unturned;
+using Rocket.Unturned.Events;
 using Rocket.Unturned.Player;
 using SDG.Unturned;
 using Steamworks;
@@ -8,6 +9,10 @@ using Tavstal.TLibrary.Utils;
 
 namespace fr34kyn01535.Uconomy
 {
+    /// <summary>
+    /// Class containing event handlers for player connections, disconnections, deaths, and stat updates in Unturned game.
+    /// Provides methods to attach and detach event handlers, as well as handle player-related events such as setting up accounts, managing salaries, applying death penalties, and rewarding kills.
+    /// </summary>
     internal class UnturnedEventHandler
     {
         private static bool _isAttached { get; set; }
@@ -19,6 +24,9 @@ namespace fr34kyn01535.Uconomy
 
             U.Events.OnPlayerConnected += Events_OnPlayerConnected;
             U.Events.OnPlayerDisconnected += Events_OnPlayerDisconnected;
+
+            UnturnedPlayerEvents.OnPlayerDeath += Event_OnDeath;
+            UnturnedPlayerEvents.OnPlayerUpdateStat += Event_OnStatUpdate;
         }
 
         public static void Dettach()
@@ -28,6 +36,9 @@ namespace fr34kyn01535.Uconomy
 
             U.Events.OnPlayerConnected -= Events_OnPlayerConnected;
             U.Events.OnPlayerDisconnected -= Events_OnPlayerDisconnected;
+
+            UnturnedPlayerEvents.OnPlayerDeath -= Event_OnDeath;
+            UnturnedPlayerEvents.OnPlayerUpdateStat -= Event_OnStatUpdate;
         }
 
         private static void Events_OnPlayerConnected(UnturnedPlayer player)
