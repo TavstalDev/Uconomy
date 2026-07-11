@@ -46,6 +46,13 @@ The updated version of the well known Uconomy plugin.
 </details>
 
 <details>
+<summary>/setbalance [player] [amount]</summary>
+<b>Description:</b> Sets the balance of a player
+<br>
+<b>Permission(s):</b> uconomy.commands.setbalance
+</details>
+
+<details>
 <summary>/exchange [cash | xp] [amount]</summary>
 <b>Description:</b> Exchanges the provided amount of your balance to the provided currency
 <br>
