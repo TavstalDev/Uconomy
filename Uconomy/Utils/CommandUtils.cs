@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Rocket.API;
 using Rocket.Unturned.Player;
 using SDG.Unturned;
@@ -32,7 +33,8 @@ namespace fr34kyn01535.Uconomy.Utils
                 return;
             }
 
-            Rocket.Core.Logging.Logger.Log(message);
+            string strippedText = Regex.Replace(message, @"<[^>]*>|\[.*?\]", string.Empty);
+            Rocket.Core.Logging.Logger.Log(strippedText);
         }
     }
 }
