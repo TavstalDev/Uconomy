@@ -8,7 +8,7 @@ using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Tavstal.TLibrary.Utils;
+using UnityEngine;
 
 namespace fr34kyn01535.Uconomy
 {
@@ -90,17 +90,6 @@ namespace fr34kyn01535.Uconomy
         }
 
         /// <summary>
-        /// Translates a message key into a formatted string with a prefix.
-        /// </summary>
-        /// <param name="translationKey">The key of the translation to use.</param>
-        /// <param name="args">Arguments to format into the translation.</param>
-        /// <returns>A formatted string with the translation and prefix.</returns>
-        public string TranslateRich(string translationKey, params string[] args)
-        {
-            return FormatHelper.FormatTextV2(DefaultTranslations.Translate("prefix") + " " + DefaultTranslations.Translate(translationKey, args));
-        }
-
-        /// <summary>
         /// Triggers the OnPlayerPay event when a payment is made.
         /// </summary>
         /// <param name="sender">The player sending the payment.</param>
@@ -112,7 +101,7 @@ namespace fr34kyn01535.Uconomy
                 OnPlayerPay(sender, receiver, amt);
         }
 
-        // <summary>
+        /// <summary>
         /// Triggers the OnBalanceUpdate event when a player's balance is updated.
         /// </summary>
         /// <param name="SteamID">The SteamID of the player whose balance was updated.</param>
@@ -168,41 +157,49 @@ namespace fr34kyn01535.Uconomy
                     continue;
 
                 Database.IncreaseBalance(unturnedPlayer.Id, salary);
-                ChatHelper.SendChatMessage(steamPlayer, "salary_msg", salary, Configuration.Instance.MoneyName);
+                ChatManager.serverSendMessage(Instance.Translate("salary_msg", GetPrefix(), salary, Configuration.Instance.MoneyName), 
+                    Color.green, 
+                    null, 
+                    steamPlayer, 
+                    EChatMode.GLOBAL, 
+                    null, 
+                    true);
             }
 
 
             _lastUpdate = DateTime.Now.AddMinutes(1);
         }
 
+        public string GetPrefix() => Translate("prefix") ?? "";
+
         /// <summary>
         /// Provides the default translations for the plugin.
         /// </summary>
-        public override TranslationList DefaultTranslations
-        {
-            get
-            {
-                return new TranslationList(){
-                    {"prefix", "&e[&6Uconomy&e]" },
-                    {"command_balance_show", "&aYour current balance is: &c{0} {1}"},
-                    {"command_balance_show_other", "&a{2}'s current balance is: &c{0} {1}"},
-                    {"command_balance_other_forbidden", "&cYou do not have permission to do that." },
-                    {"command_pay_invalid", "&cInvalid arguments. Usage: /pay {0}"},
-                    {"command_pay_error_pay_self", "&cYou cant pay yourself"},
-                    {"command_pay_error_invalid_amount", "&cInvalid amount"},
-                    {"command_pay_error_cant_afford", "&cYour balance does not allow this payment"},
-                    {"command_pay_error_player_not_found", "&cFailed to find player"},
-                    {"command_pay_private", "&aYou paid {0} {1} {2}"},
-                    {"command_pay_console", "&aYou received a payment of {0} {1} "},
-                    {"command_pay_other_private", "&aYou received a payment of {0} {1} from {2}"},
-                    {"command_exchange_invalid", "&cInvalid arguments. Usage: /exchange {0}" },
-                    {"command_exchange_cant_afford", "&cYour balance does not allow this exchange." },
-                    {"command_exchange_success", "&aThe exchange was successful" },
-                    {"salary_msg", "&aYou have received your salary of {0} {1}" },
-                    {"death_penalty_msg", "&a{0} {1} was deducted from your balance as death penalty." },
-                    {"kill_reward_msg", "&a{0} {1} was added to your balance as kill reward." }
-                }; 
-            }
-        }
+        public override TranslationList DefaultTranslations =>
+            new TranslationList {
+                {"prefix", "<color=#FFFF55>[</color><color=#FFAA00>Uconomy</color><color=#FFFF55>]</color>" },
+                {"command_balance_show", "{0} <color=#55FF55>Your current balance is: {1} {2}</color>"},
+                {"command_balance_show_other", "{0} <color=#55FF55>{3}'s current balance is: {1} {2}</color>"},
+                {"command_balance_other_forbidden", "{0} <color=#FF5555>You do not have permission to do that.</color>" },
+                {"command_pay_error_invalid", "{0} <color=#FF5555>Invalid arguments. Usage: /pay {1}</color>"},
+                {"command_pay_error_pay_self", "{0} <color=#FF5555>You cant pay yourself.</color>"},
+                {"command_pay_error_invalid_amount", "{0} <color=#FF5555>Invalid amount.</color>"},
+                {"command_pay_error_cant_afford", "{0} <color=#FF5555>Your balance does not allow this payment.</color>"},
+                {"command_pay_error_player_not_found", "{0} <color=#FF5555>Failed to find player.</color>"},
+                {"command_pay_private", "{0} <color=#55FF55>You paid {1} {2} {3}</color>"},
+                {"command_pay_console", "{0} <color=#55FF55>You received a payment of {1} {2}</color>"},
+                {"command_pay_other_private", "{0} <color=#55FF55>You received a payment of {1} {2} from {3}</color>"},
+                {"command_adminpay_error_invalid", "{0} <color=#FF5555>Invalid arguments. Usage: /adminpay {1}</color>"},
+                {"command_setbalance_error_invalid", "{0} <color=#FF5555>Invalid arguments. Usage: /setbalance {1}</color>"},
+                {"command_setbalance_error_generic", "{0} <color=#FF5555>Failed to change the balance of the player.</color>"},
+                {"command_setbalance_success", "{0} <color=#55FF55>You have successfully set the balance of {3} to {1}{2}.</color>"},
+                {"command_setbalance_success_other", "{0} <color=#55FF55>Your balance has been set to {1}{2}.</color>"},
+                {"command_exchange_error_invalid", "{0} <color=#FF5555>Invalid arguments. Usage: /exchange {1}</color>" },
+                {"command_exchange_error_cant_afford", "{0} <color=#FF5555>Your balance does not allow this exchange.</color>" },
+                {"command_exchange_success", "{0} <color=#55FF55>The exchange was successful</color>" },
+                {"salary_msg", "{0} <color=#55FF55>You have received your salary of {1} {2}</color>" },
+                {"death_penalty_msg", "{0} <color=#55FF55>{1} {2} was deducted from your balance as death penalty.</color>" },
+                {"kill_reward_msg", "{0} <color=#55FF55>{1} {2} was added to your balance as kill reward.</color>" }
+            };
     }
 }
