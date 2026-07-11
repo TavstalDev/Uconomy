@@ -5,21 +5,79 @@ using System.Collections.Generic;
 
 namespace fr34kyn01535.Uconomy
 {
+    /// <summary>
+    /// Represents the configuration settings for the Uconomy plugin,
+    /// including database connection, economy defaults, salaries,
+    /// kill rewards, and death penalties.
+    /// </summary>
+    // ReSharper disable once ClassNeverInstantiated.Global
     public class UconomyConfiguration : IRocketPluginConfiguration
     {
+        /// <summary>
+        /// The MySQL server address.
+        /// </summary>
         public string DatabaseAddress;
+
+        /// <summary>
+        /// The MySQL username for authentication.
+        /// </summary>
         public string DatabaseUsername;
+
+        /// <summary>
+        /// The MySQL password for authentication.
+        /// </summary>
         public string DatabasePassword;
+
+        /// <summary>
+        /// The MySQL database name.
+        /// </summary>
         public string DatabaseName;
+
+        /// <summary>
+        /// The name of the table storing player balances.
+        /// </summary>
         public string DatabaseTableName;
+
+        /// <summary>
+        /// The MySQL server port number.
+        /// </summary>
         public int DatabasePort;
+
+        /// <summary>
+        /// The starting balance given to new players.
+        /// </summary>
         public decimal InitialBalance;
+
+        /// <summary>
+        /// The display name of the currency used in messages.
+        /// </summary>
         public string MoneyName;
+
+        /// <summary>
+        /// Whether periodic salary payments are enabled.
+        /// </summary>
         public bool EnableSalaries;
+
+        /// <summary>
+        /// The interval in seconds between salary payments.
+        /// </summary>
         public int SalaryInterval;
+
+        /// <summary>
+        /// The list of configured kill reward rules.
+        /// </summary>
         public List<KillReward> KillRewards;
+
+        /// <summary>
+        /// The list of configured death penalty rules.
+        /// </summary>
         public List<DeathPenalty> DeathPenalties;
 
+        /// <summary>
+        /// Loads the default configuration values,
+        /// including database settings, economy defaults,
+        /// kill rewards, and death penalties.
+        /// </summary>
         public void LoadDefaults()
         {
             DatabaseAddress = "localhost";
@@ -34,10 +92,10 @@ namespace fr34kyn01535.Uconomy
             SalaryInterval = 1800;
             KillRewards = new List<KillReward>()
             {
-                new KillReward("KILLS_ZOMBIES_NORMAL", 5, true),
-                new KillReward("KILLS_ZOMBIES_MEGA", 10, true),
-                new KillReward("KILLS_PLAYERS", 15, true),
-                new KillReward("HEADSHOTS", 20, true),
+                new KillReward(  EPlayerStat.KILLS_ZOMBIES_NORMAL, 5, true),
+                new KillReward(EPlayerStat.KILLS_ZOMBIES_MEGA, 10, true),
+                new KillReward(EPlayerStat.KILLS_PLAYERS, 15, true),
+                new KillReward(EPlayerStat.HEADSHOTS, 20, true),
             };
             DeathPenalties = new List<DeathPenalty>()
             {
