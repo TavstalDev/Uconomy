@@ -178,6 +178,7 @@ namespace fr34kyn01535.Uconomy
         public override TranslationList DefaultTranslations =>
             new TranslationList {
                 {"prefix", "<color=#FFFF55>[</color><color=#FFAA00>Uconomy</color><color=#FFFF55>]</color>" },
+                {"command_error_exception", "{0} <color=#FF5555>Unexpected error occured while executing the command. Please report it to an administrator.</color>"},
                 {"command_balance_error_invalid", "{0} <color=#FF5555>Invalid arguments. Usage: /balance {1}</color>"},
                 {"command_balance_show", "{0} <color=#55FF55>Your current balance is: {1} {2}</color>"},
                 {"command_balance_show_other", "{0} <color=#55FF55>{3}'s current balance is: {1} {2}</color>"},
