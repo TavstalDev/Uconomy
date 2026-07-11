@@ -2,6 +2,8 @@
 using Rocket.Unturned.Player;
 using System.Collections.Generic;
 using fr34kyn01535.Uconomy.Utils;
+using Rocket.Unturned.Commands;
+
 // ReSharper disable UnusedType.Global
 
 namespace fr34kyn01535.Uconomy.Commands
@@ -37,8 +39,12 @@ namespace fr34kyn01535.Uconomy.Commands
                 return;
             }
 
+            string otherPlayerId  = command.GetCSteamIDParameter(0)?.ToString();
             UnturnedPlayer otherPlayer = UnturnedPlayer.FromName(command[0]);
             if (otherPlayer != null)
+                otherPlayerId = otherPlayer.Id;
+            
+            if (!string.IsNullOrEmpty(otherPlayerId))
             {
                 if (!decimal.TryParse(command[1], out var amount) || amount <= 0)
                 {
@@ -46,12 +52,14 @@ namespace fr34kyn01535.Uconomy.Commands
                     return;
                 }
 
-                Uconomy.Instance.Database.IncreaseBalance(otherPlayer.Id, amount);
-                CommandUtils.SendCommandReply(caller, Uconomy.Instance.Translate("command_pay_private", Uconomy.Instance.GetPrefix(), otherPlayer.CharacterName, 
+                Uconomy.Instance.Database.IncreaseBalance(otherPlayerId, amount);
+                CommandUtils.SendCommandReply(caller, Uconomy.Instance.Translate("command_pay_private", Uconomy.Instance.GetPrefix(), 
+                    otherPlayer?.CharacterName ?? otherPlayerId, 
                     amount, Uconomy.Instance.Configuration.Instance.MoneyName));
 
-                CommandUtils.SendCommandReply(otherPlayer, Uconomy.Instance.Translate("command_pay_console", Uconomy.Instance.GetPrefix(), amount, 
-                    Uconomy.Instance.Configuration.Instance.MoneyName));
+                if (otherPlayer != null)
+                    CommandUtils.SendCommandReply(otherPlayer, Uconomy.Instance.Translate("command_pay_console", Uconomy.Instance.GetPrefix(), amount, 
+                        Uconomy.Instance.Configuration.Instance.MoneyName));
                 return;
             }
 

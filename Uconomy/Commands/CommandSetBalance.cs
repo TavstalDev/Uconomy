@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using fr34kyn01535.Uconomy.Utils;
 using Rocket.API;
+using Rocket.Unturned.Commands;
 using Rocket.Unturned.Player;
 // ReSharper disable UnusedType.Global
 
@@ -12,7 +13,7 @@ namespace fr34kyn01535.Uconomy.Commands
     /// </summary>
     public class CommandSetBalance : IRocketCommand
     {
-        public AllowedCaller AllowedCaller => AllowedCaller.Player;
+        public AllowedCaller AllowedCaller => AllowedCaller.Both;
         public string Name => "setbalance";
         public string Help => "Sets the balance of a player";
         public string Syntax => "[player] [amount]";
@@ -37,8 +38,12 @@ namespace fr34kyn01535.Uconomy.Commands
                 return;
             }
 
+            string targetId  = command.GetCSteamIDParameter(0)?.ToString();
             UnturnedPlayer target = UnturnedPlayer.FromName(command[0]);
-            if (target == null)
+            if (target != null)
+                targetId = target.Id;
+            
+            if (string.IsNullOrEmpty(targetId))
             {
                 CommandUtils.SendCommandReply(caller, Uconomy.Instance.Translate("command_pay_error_player_not_found", Uconomy.Instance.GetPrefix()));
                 return;
@@ -50,14 +55,16 @@ namespace fr34kyn01535.Uconomy.Commands
                 return;
             }
 
-            if (Uconomy.Instance.Database.SetBalance(target.Id, amount))
+            if (Uconomy.Instance.Database.SetBalance(targetId, amount))
             {
                 CommandUtils.SendCommandReply(caller, Uconomy.Instance.Translate("command_setbalance_success",
                     Uconomy.Instance.GetPrefix(), amount,
-                    Uconomy.Instance.Configuration.Instance.MoneyName, target.CharacterName));
-                CommandUtils.SendCommandReply(target, Uconomy.Instance.Translate("command_setbalance_success_other",
-                    Uconomy.Instance.GetPrefix(), amount,
-                    Uconomy.Instance.Configuration.Instance.MoneyName));
+                    Uconomy.Instance.Configuration.Instance.MoneyName, target?.CharacterName ?? targetId));
+                
+                if (target != null)
+                    CommandUtils.SendCommandReply(target, Uconomy.Instance.Translate("command_setbalance_success_other",
+                        Uconomy.Instance.GetPrefix(), amount,
+                        Uconomy.Instance.Configuration.Instance.MoneyName));
                 return;
             }
             
