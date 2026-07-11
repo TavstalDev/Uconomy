@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using fr34kyn01535.Uconomy.Utils;
 using Rocket.API;
+using Rocket.Unturned.Commands;
 using Rocket.Unturned.Player;
 // ReSharper disable UnusedType.Global
 
@@ -13,7 +14,7 @@ namespace fr34kyn01535.Uconomy.Commands
     /// </summary>
     public class CommandBalance : IRocketCommand
     {
-        public AllowedCaller AllowedCaller => AllowedCaller.Player;
+        public AllowedCaller AllowedCaller => AllowedCaller.Both;
         public string Name => "balance";
         public string Help => "Shows the current balance";
         public string Syntax => "<player>";
@@ -34,6 +35,12 @@ namespace fr34kyn01535.Uconomy.Commands
         {
             if (command.Length == 0)
             {
+                if (caller is ConsolePlayer)
+                {
+                    CommandUtils.SendCommandReply(caller, Uconomy.Instance.Translate("command_balance_error_invalid", Uconomy.Instance.GetPrefix(), Syntax));
+                    return;
+                }
+                
                 decimal balance = Uconomy.Instance.Database.GetBalance(caller.Id);
                 CommandUtils.SendCommandReply(caller, Uconomy.Instance.Translate("command_balance_show", Uconomy.Instance.GetPrefix(), balance, 
                     Uconomy.Instance.Configuration.Instance.MoneyName));
@@ -46,16 +53,20 @@ namespace fr34kyn01535.Uconomy.Commands
                 return;
             }
 
+            string targetId  = command.GetCSteamIDParameter(0)?.ToString();
             UnturnedPlayer target = UnturnedPlayer.FromName(command[0]);
-            if (target == null)
+            if (target != null)
+                targetId = target.Id;
+            
+            if (string.IsNullOrEmpty(targetId))
             {
                 CommandUtils.SendCommandReply(caller, Uconomy.Instance.Translate("command_pay_error_player_not_found", Uconomy.Instance.GetPrefix()));
                 return;
             }
 
-            decimal targetBalance = Uconomy.Instance.Database.GetBalance(target.Id);
+            decimal targetBalance = Uconomy.Instance.Database.GetBalance(targetId);
             CommandUtils.SendCommandReply(caller, Uconomy.Instance.Translate( "command_balance_show_other", Uconomy.Instance.GetPrefix(), targetBalance, 
-                Uconomy.Instance.Configuration.Instance.MoneyName, target.CharacterName));
+                Uconomy.Instance.Configuration.Instance.MoneyName, target?.CharacterName ?? targetId));
         }
     }
 }
