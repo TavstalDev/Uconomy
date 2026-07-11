@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using fr34kyn01535.Uconomy.Threading;
 using fr34kyn01535.Uconomy.Utils;
 using Rocket.API;
 using Rocket.Unturned.Commands;
@@ -25,69 +27,97 @@ namespace fr34kyn01535.Uconomy.Commands
         /// </summary>
         public void Execute(IRocketPlayer caller, params string[] command)
         {
-            if (command.Length != 2)
+            try
             {
-                CommandUtils.SendCommandReply(caller,
-                    Uconomy.Instance.Translate("command_pay_error_invalid", Uconomy.Instance.GetPrefix(), Syntax));
-                return;
-            }
+                if (command.Length != 2)
+                {
+                    CommandUtils.SendCommandReply(caller,
+                        Uconomy.Instance.Translate("command_pay_error_invalid", Uconomy.Instance.GetPrefix(), Syntax));
+                    return;
+                }
 
-            string otherPlayerId  = command.GetCSteamIDParameter(0)?.ToString();
-            UnturnedPlayer otherPlayer = UnturnedPlayer.FromName(command[0]);
-            if (otherPlayer != null)
-                otherPlayerId = otherPlayer.Id;
-            
-            if (string.IsNullOrEmpty(otherPlayerId))
-            {
-                CommandUtils.SendCommandReply(caller,
-                    Uconomy.Instance.Translate("command_pay_error_player_not_found", Uconomy.Instance.GetPrefix()));
-                return;
-            }
-
-            if (caller.Id == otherPlayerId)
-            {
-                CommandUtils.SendCommandReply(caller,
-                    Uconomy.Instance.Translate("command_pay_error_pay_self", Uconomy.Instance.GetPrefix()));
-                return;
-            }
-
-            if (!decimal.TryParse(command[1], out var amount) || amount <= 0)
-            {
-                CommandUtils.SendCommandReply(caller,
-                    Uconomy.Instance.Translate("command_pay_error_invalid_amount", Uconomy.Instance.GetPrefix()));
-                return;
-            }
-
-            if (caller is ConsolePlayer)
-            {
-                Uconomy.Instance.Database.IncreaseBalance(otherPlayerId, amount);
+                string otherPlayerId = command.GetCSteamIDParameter(0)?.ToString();
+                UnturnedPlayer otherPlayer = UnturnedPlayer.FromName(command[0]);
                 if (otherPlayer != null)
-                    CommandUtils.SendCommandReply(otherPlayer,
-                        Uconomy.Instance.Translate("command_pay_console", Uconomy.Instance.GetPrefix(), amount,
-                            Uconomy.Instance.Configuration.Instance.MoneyName));
-                return;
-            }
+                    otherPlayerId = otherPlayer.Id;
 
-            decimal myBalance = Uconomy.Instance.Database.GetBalance(caller.Id);
-            if (myBalance - amount <= 0)
+                if (string.IsNullOrEmpty(otherPlayerId))
+                {
+                    CommandUtils.SendCommandReply(caller,
+                        Uconomy.Instance.Translate("command_pay_error_player_not_found", Uconomy.Instance.GetPrefix()));
+                    return;
+                }
+
+                if (caller.Id == otherPlayerId)
+                {
+                    CommandUtils.SendCommandReply(caller,
+                        Uconomy.Instance.Translate("command_pay_error_pay_self", Uconomy.Instance.GetPrefix()));
+                    return;
+                }
+
+                if (!decimal.TryParse(command[1], out var amount) || amount <= 0)
+                {
+                    CommandUtils.SendCommandReply(caller,
+                        Uconomy.Instance.Translate("command_pay_error_invalid_amount", Uconomy.Instance.GetPrefix()));
+                    return;
+                }
+
+                if (caller is ConsolePlayer)
+                {
+                    SafeTask.Run(() =>
+                    {
+                        Uconomy.Instance.Database.IncreaseBalance(otherPlayerId, amount);
+                        if (otherPlayer != null)
+                            MainThreadDispatcher.Run(() =>
+                            {
+                                CommandUtils.SendCommandReply(otherPlayer,
+                                    Uconomy.Instance.Translate("command_pay_console", Uconomy.Instance.GetPrefix(),
+                                        amount,
+                                        Uconomy.Instance.Configuration.Instance.MoneyName));
+                            });
+                    }, GetType().Name);
+                    return;
+                }
+
+                SafeTask.Run(() =>
+                {
+                    decimal myBalance = Uconomy.Instance.Database.GetBalance(caller.Id);
+                    if (myBalance - amount <= 0)
+                    {
+                        MainThreadDispatcher.Run(() =>
+                        {
+                            CommandUtils.SendCommandReply(caller,
+                                Uconomy.Instance.Translate("command_pay_error_cant_afford",
+                                    Uconomy.Instance.GetPrefix()));
+                        });
+                        return;
+                    }
+
+                    Uconomy.Instance.Database.IncreaseBalance(caller.Id, -amount);
+                    Uconomy.Instance.Database.IncreaseBalance(otherPlayerId, amount);
+
+                    MainThreadDispatcher.Run(() =>
+                    {
+                        CommandUtils.SendCommandReply(caller, Uconomy.Instance.Translate("command_pay_private",
+                            Uconomy.Instance.GetPrefix(), otherPlayer?.CharacterName ?? otherPlayerId,
+                            amount, Uconomy.Instance.Configuration.Instance.MoneyName));
+                        
+                        if (otherPlayer != null)
+                            CommandUtils.SendCommandReply(otherPlayer, Uconomy.Instance.Translate(
+                                "command_pay_other_private",
+                                Uconomy.Instance.GetPrefix(), amount,
+                                Uconomy.Instance.Configuration.Instance.MoneyName, caller.DisplayName));
+                        Uconomy.Instance.HasBeenPayed((UnturnedPlayer)caller, otherPlayer, amount);
+                    });
+                }, GetType().Name);
+            }
+            catch (Exception ex)
             {
                 CommandUtils.SendCommandReply(caller,
-                    Uconomy.Instance.Translate("command_pay_error_cant_afford", Uconomy.Instance.GetPrefix()));
-                return;
+                    Uconomy.Instance.Translate("command_error_exception", Uconomy.Instance.GetPrefix()));
+                Rocket.Core.Logging.Logger.LogError($"Failed to execute the '{this.GetType().Name}' command: ");
+                Rocket.Core.Logging.Logger.LogException(ex);
             }
-
-            Uconomy.Instance.Database.IncreaseBalance(caller.Id, -amount);
-            CommandUtils.SendCommandReply(caller, Uconomy.Instance.Translate("command_pay_private",
-                Uconomy.Instance.GetPrefix(), otherPlayer?.CharacterName ?? otherPlayerId,
-                amount, Uconomy.Instance.Configuration.Instance.MoneyName));
-            
-            Uconomy.Instance.Database.IncreaseBalance(otherPlayerId, amount);
-            
-            if (otherPlayer != null)
-                CommandUtils.SendCommandReply(otherPlayer, Uconomy.Instance.Translate("command_pay_other_private",
-                    Uconomy.Instance.GetPrefix(), amount,
-                    Uconomy.Instance.Configuration.Instance.MoneyName, caller.DisplayName));
-            Uconomy.Instance.HasBeenPayed((UnturnedPlayer)caller, otherPlayer, amount);
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using fr34kyn01535.Uconomy.Threading;
 using fr34kyn01535.Uconomy.Utils;
 using Rocket.API;
 using Rocket.Unturned.Commands;
@@ -33,40 +35,67 @@ namespace fr34kyn01535.Uconomy.Commands
         /// </param>
         public void Execute(IRocketPlayer caller, params string[] command)
         {
-            if (command.Length == 0)
+            try
             {
-                if (caller is ConsolePlayer)
+                if (command.Length == 0)
                 {
-                    CommandUtils.SendCommandReply(caller, Uconomy.Instance.Translate("command_balance_error_invalid", Uconomy.Instance.GetPrefix(), Syntax));
+                    if (caller is ConsolePlayer)
+                    {
+                        CommandUtils.SendCommandReply(caller,
+                            Uconomy.Instance.Translate("command_balance_error_invalid", Uconomy.Instance.GetPrefix(),
+                                Syntax));
+                        return;
+                    }
+
+                    SafeTask.Run(() =>
+                    {
+                        decimal balance = Uconomy.Instance.Database.GetBalance(caller.Id);
+                        MainThreadDispatcher.Run(() =>
+                        {
+                            CommandUtils.SendCommandReply(caller, Uconomy.Instance.Translate("command_balance_show",
+                                Uconomy.Instance.GetPrefix(), balance,
+                                Uconomy.Instance.Configuration.Instance.MoneyName));
+                        });
+                    }, GetType().Name);
                     return;
                 }
-                
-                decimal balance = Uconomy.Instance.Database.GetBalance(caller.Id);
-                CommandUtils.SendCommandReply(caller, Uconomy.Instance.Translate("command_balance_show", Uconomy.Instance.GetPrefix(), balance, 
-                    Uconomy.Instance.Configuration.Instance.MoneyName));
-                return;
-            }
 
-            if (!caller.HasPermission("uconomy.commands.balance.other"))
+                if (!caller.HasPermission("uconomy.commands.balance.other"))
+                {
+                    CommandUtils.SendCommandReply(caller,
+                        Uconomy.Instance.Translate("command_balance_other_forbidden", Uconomy.Instance.GetPrefix()));
+                    return;
+                }
+
+                string targetId = command.GetCSteamIDParameter(0)?.ToString();
+                UnturnedPlayer target = UnturnedPlayer.FromName(command[0]);
+                if (target != null)
+                    targetId = target.Id;
+
+                if (string.IsNullOrEmpty(targetId))
+                {
+                    CommandUtils.SendCommandReply(caller,
+                        Uconomy.Instance.Translate("command_pay_error_player_not_found", Uconomy.Instance.GetPrefix()));
+                    return;
+                }
+
+                SafeTask.Run(() =>
+                {
+                    decimal targetBalance = Uconomy.Instance.Database.GetBalance(targetId);
+                    MainThreadDispatcher.Run(() =>
+                    {
+                        CommandUtils.SendCommandReply(caller, Uconomy.Instance.Translate("command_balance_show_other",
+                            Uconomy.Instance.GetPrefix(), targetBalance,
+                            Uconomy.Instance.Configuration.Instance.MoneyName, target?.CharacterName ?? targetId));
+                    });
+                }, GetType().Name);
+            }
+            catch (Exception ex)
             {
-                CommandUtils.SendCommandReply(caller, Uconomy.Instance.Translate("command_balance_other_forbidden", Uconomy.Instance.GetPrefix()));
-                return;
+                CommandUtils.SendCommandReply(caller, Uconomy.Instance.Translate("command_error_exception", Uconomy.Instance.GetPrefix()));
+                Rocket.Core.Logging.Logger.LogError($"Failed to execute the '{this.GetType().Name}' command: ");
+                Rocket.Core.Logging.Logger.LogException(ex);
             }
-
-            string targetId  = command.GetCSteamIDParameter(0)?.ToString();
-            UnturnedPlayer target = UnturnedPlayer.FromName(command[0]);
-            if (target != null)
-                targetId = target.Id;
-            
-            if (string.IsNullOrEmpty(targetId))
-            {
-                CommandUtils.SendCommandReply(caller, Uconomy.Instance.Translate("command_pay_error_player_not_found", Uconomy.Instance.GetPrefix()));
-                return;
-            }
-
-            decimal targetBalance = Uconomy.Instance.Database.GetBalance(targetId);
-            CommandUtils.SendCommandReply(caller, Uconomy.Instance.Translate( "command_balance_show_other", Uconomy.Instance.GetPrefix(), targetBalance, 
-                Uconomy.Instance.Configuration.Instance.MoneyName, target?.CharacterName ?? targetId));
         }
     }
 }

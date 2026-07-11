@@ -2,6 +2,7 @@
 using Rocket.Unturned.Player;
 using System;
 using System.Collections.Generic;
+using fr34kyn01535.Uconomy.Threading;
 using fr34kyn01535.Uconomy.Utils;
 // ReSharper disable UnusedType.Global
 
@@ -31,58 +32,96 @@ namespace fr34kyn01535.Uconomy.Commands
         /// </param>
         public void Execute(IRocketPlayer caller, params string[] command)
         {
-            if (command.Length != 2)
+            try
             {
-                CommandUtils.SendCommandReply(caller, Uconomy.Instance.Translate("command_exchange_error_invalid", Uconomy.Instance.GetPrefix(), Syntax));
-                return;
-            }
+                if (command.Length != 2)
+                {
+                    CommandUtils.SendCommandReply(caller,
+                        Uconomy.Instance.Translate("command_exchange_error_invalid", Uconomy.Instance.GetPrefix(),
+                            Syntax));
+                    return;
+                }
 
-            if (!decimal.TryParse(command[1], out decimal amount))
-            {
-                CommandUtils.SendCommandReply(caller, Uconomy.Instance.Translate("command_pay_error_invalid_amount", Uconomy.Instance.GetPrefix()));
-                return;
-            }
-            if (amount <= 0)
-                amount = Math.Abs(amount);
+                if (!decimal.TryParse(command[1], out decimal amount))
+                {
+                    CommandUtils.SendCommandReply(caller,
+                        Uconomy.Instance.Translate("command_pay_error_invalid_amount", Uconomy.Instance.GetPrefix()));
+                    return;
+                }
 
-            UnturnedPlayer callerPlayer = (UnturnedPlayer)caller;
-            switch (command[0].ToLower())
-            {
-                case "cash":
-                case "money":
+                if (amount <= 0)
+                    amount = Math.Abs(amount);
+
+                UnturnedPlayer callerPlayer = (UnturnedPlayer)caller;
+                switch (command[0].ToLower())
+                {
+                    case "cash":
+                    case "money":
                     {
-                        decimal balance = Uconomy.Instance.Database.GetBalance(caller.Id);
-                        if (balance < amount)
+                        SafeTask.Run(() =>
                         {
-                            CommandUtils.SendCommandReply(caller, Uconomy.Instance.Translate("command_exchange_error_cant_afford", Uconomy.Instance.GetPrefix()));
-                            return;
-                        }
+                            decimal balance = Uconomy.Instance.Database.GetBalance(caller.Id);
+                            if (balance < amount)
+                            {
+                                MainThreadDispatcher.Run(() =>
+                                {
+                                    CommandUtils.SendCommandReply(caller,
+                                        Uconomy.Instance.Translate("command_exchange_error_cant_afford",
+                                            Uconomy.Instance.GetPrefix()));
+                                });
+                                return;
+                            }
 
-                        Uconomy.Instance.Database.IncreaseBalance(caller.Id, -amount);
-                        callerPlayer.Experience += (uint)amount;
-                        CommandUtils.SendCommandReply(caller, Uconomy.Instance.Translate("command_exchange_success", Uconomy.Instance.GetPrefix()));
+                            Uconomy.Instance.Database.IncreaseBalance(caller.Id, -amount);
+                            MainThreadDispatcher.Run(() =>
+                            {
+                                callerPlayer.Experience += (uint)amount;
+                                CommandUtils.SendCommandReply(caller,
+                                    Uconomy.Instance.Translate("command_exchange_success",
+                                        Uconomy.Instance.GetPrefix()));
+                            });
+                        }, GetType().Name);
                         break;
                     }
-                case "xp":
-                case "experience":
+                    case "xp":
+                    case "experience":
                     {
                         uint balance = callerPlayer.Experience;
                         if (balance < amount)
                         {
-                            CommandUtils.SendCommandReply(caller, Uconomy.Instance.Translate("command_exchange_error_cant_afford", Uconomy.Instance.GetPrefix()));
+                            CommandUtils.SendCommandReply(caller,
+                                Uconomy.Instance.Translate("command_exchange_error_cant_afford",
+                                    Uconomy.Instance.GetPrefix()));
                             return;
                         }
 
-                        Uconomy.Instance.Database.IncreaseBalance(caller.Id, amount);
-                        callerPlayer.Experience -= (uint)amount;
-                        CommandUtils.SendCommandReply(caller, Uconomy.Instance.Translate("command_exchange_success", Uconomy.Instance.GetPrefix()));
+                        SafeTask.Run(() =>
+                        {
+                            Uconomy.Instance.Database.IncreaseBalance(caller.Id, amount);
+                            MainThreadDispatcher.Run(() =>
+                            {
+                                callerPlayer.Experience -= (uint)amount;
+                                CommandUtils.SendCommandReply(caller,
+                                    Uconomy.Instance.Translate("command_exchange_success",
+                                        Uconomy.Instance.GetPrefix()));
+                            });
+                        }, GetType().Name);
                         break;
                     }
-                default:
+                    default:
                     {
-                        CommandUtils.SendCommandReply(caller, Uconomy.Instance.Translate("command_exchange_error_invalid", Uconomy.Instance.GetPrefix(), Syntax));
+                        CommandUtils.SendCommandReply(caller,
+                            Uconomy.Instance.Translate("command_exchange_error_invalid", Uconomy.Instance.GetPrefix(),
+                                Syntax));
                         return;
                     }
+                }
+            }
+            catch (Exception ex)
+            {
+                CommandUtils.SendCommandReply(caller, Uconomy.Instance.Translate("command_error_exception", Uconomy.Instance.GetPrefix()));
+                Rocket.Core.Logging.Logger.LogError($"Failed to execute the '{this.GetType().Name}' command: ");
+                Rocket.Core.Logging.Logger.LogException(ex);
             }
         }
     }
