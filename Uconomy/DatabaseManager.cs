@@ -1,24 +1,36 @@
-﻿using MySql.Data.MySqlClient;
-using Rocket.Core.Logging;
+﻿using Rocket.Core.Logging;
 using System;
+using MySqlConnector;
 
 namespace fr34kyn01535.Uconomy
 {
+    /// <summary>
+    /// Manages all MySQL database operations for Uconomy,
+    /// including schema validation, balance retrieval, and balance updates.
+    /// </summary>
     public class DatabaseManager
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DatabaseManager"/> class
+        /// and ensures the database schema exists.
+        /// </summary>
         internal DatabaseManager()
         {
-            new I18N.West.CP1250(); //Workaround for database encoding issues with mono
+            _ = new I18N.West.CP1250(); //Workaround for database encoding issues with mono
             CheckSchema();
         }
 
+        /// <summary>
+        /// Verifies that the required database table exists,
+        /// creating it with default values if it does not.
+        /// </summary>
         internal void CheckSchema()
         {
             try
             {
                 MySqlConnection connection = createConnection();
                 MySqlCommand command = connection.CreateCommand();
-                command.CommandText = "show tables like '" + Uconomy.Instance.Configuration.Instance.DatabaseTableName + "'";
+                command.CommandText = "SHOW TABLES LIKE '" + Uconomy.Instance.Configuration.Instance.DatabaseTableName + "'";
                 connection.Open();
                 object test = command.ExecuteScalar();
 
@@ -35,13 +47,18 @@ namespace fr34kyn01535.Uconomy
             }
         }
 
+        /// <summary>
+        /// Creates and returns a new MySQL connection using the configured database settings.
+        /// </summary>
+        /// <returns>A configured <see cref="MySqlConnection"/> instance, or null if creation failed.</returns>
         private MySqlConnection createConnection()
         {
             MySqlConnection connection = null;
             try
             {
                 if (Uconomy.Instance.Configuration.Instance.DatabasePort == 0) Uconomy.Instance.Configuration.Instance.DatabasePort = 3306;
-                connection = new MySqlConnection(string.Format("SERVER={0};DATABASE={1};UID={2};PASSWORD={3};PORT={4};", Uconomy.Instance.Configuration.Instance.DatabaseAddress, Uconomy.Instance.Configuration.Instance.DatabaseName, Uconomy.Instance.Configuration.Instance.DatabaseUsername, Uconomy.Instance.Configuration.Instance.DatabasePassword, Uconomy.Instance.Configuration.Instance.DatabasePort));
+                connection = new MySqlConnection(
+                    $"SERVER={Uconomy.Instance.Configuration.Instance.DatabaseAddress};DATABASE={Uconomy.Instance.Configuration.Instance.DatabaseName};UID={Uconomy.Instance.Configuration.Instance.DatabaseUsername};PASSWORD={Uconomy.Instance.Configuration.Instance.DatabasePassword};PORT={Uconomy.Instance.Configuration.Instance.DatabasePort};");
             }
             catch (Exception ex)
             {
@@ -51,23 +68,23 @@ namespace fr34kyn01535.Uconomy
         }
 
         /// <summary>
-        /// returns the current balance of an account
+        /// Retrieves the current balance for the specified account.
         /// </summary>
-        /// <param name="steamId"></param>
-        /// <returns></returns>
-        public decimal GetBalance(string id)
+        /// <param name="steamId">The Steam ID of the account owner.</param>
+        /// <returns>The current balance, or 0 if the account does not exist.</returns>
+        public decimal GetBalance(string steamId)
         {
             decimal output = 0;
             try
             {
                 MySqlConnection connection = createConnection();
                 MySqlCommand command = connection.CreateCommand();
-                command.CommandText = "select `balance` from `" + Uconomy.Instance.Configuration.Instance.DatabaseTableName + "` where `steamId` = '" + id.ToString() + "';";
+                command.CommandText = "SELECT `balance` FROM `" + Uconomy.Instance.Configuration.Instance.DatabaseTableName + "` WHERE `steamId` = '" + steamId + "';";
                 connection.Open();
                 object result = command.ExecuteScalar();
                 if (result != null) decimal.TryParse(result.ToString(), out output);
                 connection.Close();
-                Uconomy.Instance.OnBalanceChecked(id, output);
+                Uconomy.Instance.OnBalanceChecked(steamId, output);
             }
             catch (Exception ex)
             {
@@ -77,24 +94,25 @@ namespace fr34kyn01535.Uconomy
         }
 
         /// <summary>
-        /// Increasing balance to increaseBy (can be negative)
+        /// Increases the balance of the specified account by the given amount.
+        /// The amount can be negative to decrease the balance.
         /// </summary>
-        /// <param name="steamId">steamid of the accountowner</param>
-        /// <param name="increaseBy">amount to change</param>
-        /// <returns>the new balance</returns>
-        public decimal IncreaseBalance(string id, decimal increaseBy)
+        /// <param name="steamId">The Steam ID of the account owner.</param>
+        /// <param name="increaseBy">The amount to add to the balance (negative to subtract).</param>
+        /// <returns>The updated balance after the change.</returns>
+        public decimal IncreaseBalance(string steamId, decimal increaseBy)
         {
             decimal output = 0;
             try
             {
                 MySqlConnection connection = createConnection();
                 MySqlCommand command = connection.CreateCommand();
-                command.CommandText = "update `" + Uconomy.Instance.Configuration.Instance.DatabaseTableName + "` set `balance` = balance + (" + increaseBy + ") where `steamId` = '" + id.ToString() + "'; select `balance` from `" + Uconomy.Instance.Configuration.Instance.DatabaseTableName + "` where `steamId` = '" + id.ToString() + "'";
+                command.CommandText = "UPDATE `" + Uconomy.Instance.Configuration.Instance.DatabaseTableName + "` SET `balance` = balance + (" + increaseBy + ") WHERE `steamId` = '" + steamId + "'; SELECT `balance` FROM `" + Uconomy.Instance.Configuration.Instance.DatabaseTableName + "` WHERE `steamId` = '" + steamId + "'";
                 connection.Open();
                 object result = command.ExecuteScalar();
                 if (result != null) decimal.TryParse(result.ToString(), out output);
                 connection.Close();
-                Uconomy.Instance.BalanceUpdated(id, increaseBy);
+                Uconomy.Instance.BalanceUpdated(steamId, increaseBy);
             }
             catch (Exception ex)
             {
@@ -102,8 +120,38 @@ namespace fr34kyn01535.Uconomy
             }
             return output;
         }
-
         
+        /// <summary>
+        /// Sets the balance of the specified account to the given value.
+        /// </summary>
+        /// <param name="steamId">The Steam ID of the account owner.</param>
+        /// <param name="newValue">The new balance amount to set.</param>
+        /// <returns>True if the balance was successfully updated; otherwise, false.</returns>
+        public bool SetBalance(string steamId, decimal newValue)
+        {
+            int result = 0;
+            try
+            {
+                MySqlConnection connection = createConnection();
+                MySqlCommand command = connection.CreateCommand();
+                command.CommandText = "UPDATE `" + Uconomy.Instance.Configuration.Instance.DatabaseTableName + "` SET `balance` = '" + newValue + "' WHERE `steamId` = '" + steamId + "';";
+                connection.Open();
+                result = command.ExecuteNonQuery();
+                connection.Close();
+                Uconomy.Instance.BalanceUpdated(steamId, newValue);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogException(ex);
+            }
+            return result > 0;
+        }
+
+        /// <summary>
+        /// Ensures that an account exists for the given Steam ID.
+        /// If no account exists, one is created with the configured initial balance.
+        /// </summary>
+        /// <param name="id">The Steam ID of the player to check or create an account for.</param>
         public void CheckSetupAccount(Steamworks.CSteamID id)
         {
             try
@@ -119,7 +167,7 @@ namespace fr34kyn01535.Uconomy
 
                 if (exists == 0)
                 {
-                    command.CommandText = "insert ignore into `" + Uconomy.Instance.Configuration.Instance.DatabaseTableName + "` (balance,steamId,lastUpdated) values(" + Uconomy.Instance.Configuration.Instance.InitialBalance + ",'" + id.ToString() + "',now())";
+                    command.CommandText = "INSERT IGNORE INTO `" + Uconomy.Instance.Configuration.Instance.DatabaseTableName + "` (balance,steamId,lastUpdated) VALUES(" + Uconomy.Instance.Configuration.Instance.InitialBalance + ",'" + id.ToString() + "',now())";
                     connection.Open();
                     command.ExecuteNonQuery();
                     connection.Close();

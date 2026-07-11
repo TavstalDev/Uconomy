@@ -2,11 +2,16 @@
 using Rocket.Unturned.Player;
 using System;
 using System.Collections.Generic;
-using Tavstal.TLibrary.Utils;
+using fr34kyn01535.Uconomy.Utils;
+// ReSharper disable UnusedType.Global
 
 namespace fr34kyn01535.Uconomy.Commands
 {
-    internal class CommandExchange : IRocketCommand
+    /// <summary>
+    /// Command that exchanges money for experience or vice versa.
+    /// Converts between the player's Uconomy balance and Unturned experience.
+    /// </summary>
+    public class CommandExchange : IRocketCommand
     {
         public AllowedCaller AllowedCaller => AllowedCaller.Player;
         public string Name => "exchange";
@@ -15,17 +20,26 @@ namespace fr34kyn01535.Uconomy.Commands
         public List<string> Aliases => new List<string>();
         public List<string> Permissions => new List<string> { "uconomy.exchange", "uconomy.commands.exchange" };
 
+        /// <summary>
+        /// Executes the exchange command, converting between cash and experience.
+        /// </summary>
+        /// <param name="caller">The player executing the command.</param>
+        /// <param name="command">
+        /// An array where:
+        /// [0] is the currency type ("cash", "money", "xp", or "experience"),
+        /// [1] is the amount to exchange.
+        /// </param>
         public void Execute(IRocketPlayer caller, params string[] command)
         {
             if (command.Length != 2)
             {
-                ChatHelper.SendCommandReply(caller, "command_exchange_invalid", Syntax);
+                CommandUtils.SendCommandReply(caller, Uconomy.Instance.Translate("command_exchange_error_invalid", Uconomy.Instance.GetPrefix(), Syntax));
                 return;
             }
 
             if (!decimal.TryParse(command[1], out decimal amount))
             {
-                ChatHelper.SendCommandReply(caller, "command_pay_error_invalid_amount");
+                CommandUtils.SendCommandReply(caller, Uconomy.Instance.Translate("command_pay_error_invalid_amount", Uconomy.Instance.GetPrefix()));
                 return;
             }
             if (amount <= 0)
@@ -40,13 +54,13 @@ namespace fr34kyn01535.Uconomy.Commands
                         decimal balance = Uconomy.Instance.Database.GetBalance(caller.Id);
                         if (balance < amount)
                         {
-                            ChatHelper.SendCommandReply(caller, "command_exchange_cant_afford");
+                            CommandUtils.SendCommandReply(caller, Uconomy.Instance.Translate("command_exchange_error_cant_afford", Uconomy.Instance.GetPrefix()));
                             return;
                         }
 
                         Uconomy.Instance.Database.IncreaseBalance(caller.Id, -amount);
                         callerPlayer.Experience += (uint)amount;
-                        ChatHelper.SendCommandReply(caller, "command_exchange_success");
+                        CommandUtils.SendCommandReply(caller, Uconomy.Instance.Translate("command_exchange_success", Uconomy.Instance.GetPrefix()));
                         break;
                     }
                 case "xp":
@@ -55,18 +69,18 @@ namespace fr34kyn01535.Uconomy.Commands
                         uint balance = callerPlayer.Experience;
                         if (balance < amount)
                         {
-                            ChatHelper.SendCommandReply(caller, "command_exchange_cant_afford");
+                            CommandUtils.SendCommandReply(caller, Uconomy.Instance.Translate("command_exchange_error_cant_afford", Uconomy.Instance.GetPrefix()));
                             return;
                         }
 
                         Uconomy.Instance.Database.IncreaseBalance(caller.Id, amount);
                         callerPlayer.Experience -= (uint)amount;
-                        ChatHelper.SendCommandReply(caller, "command_exchange_success");
+                        CommandUtils.SendCommandReply(caller, Uconomy.Instance.Translate("command_exchange_success", Uconomy.Instance.GetPrefix()));
                         break;
                     }
                 default:
                     {
-                        ChatHelper.SendCommandReply(caller, "command_exchange_invalid", Syntax);
+                        CommandUtils.SendCommandReply(caller, Uconomy.Instance.Translate("command_exchange_error_invalid", Uconomy.Instance.GetPrefix(), Syntax));
                         return;
                     }
             }
