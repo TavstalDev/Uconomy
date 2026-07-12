@@ -60,7 +60,7 @@ namespace fr34kyn01535.Uconomy
             //setup account
             Uconomy.Instance.Database.CheckSetupAccount(player.CSteamID);
             if (Uconomy.Instance.Configuration.Instance.EnableSalaries)
-                Uconomy.Instance.SalaryIntervals.Add(player.Id, DateTime.Now.AddSeconds(Uconomy.Instance.Configuration.Instance.SalaryInterval));
+                Uconomy.Instance.SalaryIntervals.TryAdd(player.Id, DateTime.Now.AddSeconds(Uconomy.Instance.Configuration.Instance.SalaryInterval));
         }
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace fr34kyn01535.Uconomy
         private static void Events_OnPlayerDisconnected(UnturnedPlayer player)
         {
             if (Uconomy.Instance.Configuration.Instance.EnableSalaries)
-                Uconomy.Instance.SalaryIntervals.Remove(player.Id);
+                Uconomy.Instance.SalaryIntervals.TryRemove(player.Id, out _);
         }
 
         /// <summary>
