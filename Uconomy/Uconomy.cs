@@ -6,8 +6,10 @@ using Rocket.Unturned.Player;
 using SDG.Unturned;
 using Steamworks;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using fr34kyn01535.Uconomy.Threading;
 using UnityEngine;
 
 namespace fr34kyn01535.Uconomy
@@ -32,7 +34,7 @@ namespace fr34kyn01535.Uconomy
         /// <summary>
         /// Stores the next salary payment time for each player.
         /// </summary>
-        internal Dictionary<string, DateTime> SalaryIntervals;
+        internal ConcurrentDictionary<string, DateTime> SalaryIntervals;
 
         #region Events
         /// <summary>
@@ -76,7 +78,7 @@ namespace fr34kyn01535.Uconomy
         {
             Instance = this;
             _lastUpdate = DateTime.Now;
-            SalaryIntervals = new Dictionary<string, DateTime>();
+            SalaryIntervals = new ConcurrentDictionary<string, DateTime>();
             Database = new DatabaseManager();
             UnturnedEventHandler.Attach();
         }
@@ -137,35 +139,49 @@ namespace fr34kyn01535.Uconomy
             if (_lastUpdate > DateTime.Now || !Configuration.Instance.EnableSalaries)
                 return;
 
-
-            foreach (SteamPlayer steamPlayer in Provider.clients)
+            SafeTask.Run(() =>
             {
-                UnturnedPlayer unturnedPlayer = UnturnedPlayer.FromSteamPlayer(steamPlayer);
-                if (!SalaryIntervals.TryGetValue(unturnedPlayer.Id, out DateTime salaryDate))
-                    continue;
+                Dictionary<SteamPlayer, string> msgs = new Dictionary<SteamPlayer, string>();
+                foreach (SteamPlayer steamPlayer in Provider.clients)
+                {
+                    UnturnedPlayer unturnedPlayer = UnturnedPlayer.FromSteamPlayer(steamPlayer);
+                    if (!SalaryIntervals.TryGetValue(unturnedPlayer.Id, out DateTime salaryDate))
+                        continue;
 
-                if (salaryDate > DateTime.Now)
-                    continue;
+                    if (salaryDate > DateTime.Now)
+                        continue;
 
-                SalaryIntervals[unturnedPlayer.Id] = DateTime.Now.AddSeconds(Configuration.Instance.SalaryInterval);
+                    SalaryIntervals[unturnedPlayer.Id] = DateTime.Now.AddSeconds(Configuration.Instance.SalaryInterval);
 
-                Permission perm = R.Permissions.GetPermissions(unturnedPlayer).FirstOrDefault(x => x.Name.ToLower().StartsWith("uconomy.salary."));
-                if (perm == null)
-                    continue;
+                    Permission perm = R.Permissions.GetPermissions(unturnedPlayer).FirstOrDefault(x => x.Name.ToLower().StartsWith("uconomy.salary."));
+                    if (perm == null)
+                        continue;
 
-                if (!decimal.TryParse(perm.Name.Replace("uconomy.salary.", ""), out decimal salary))
-                    continue;
+                    if (!decimal.TryParse(perm.Name.Replace("uconomy.salary.", ""), out decimal salary))
+                        continue;
 
-                Database.IncreaseBalance(unturnedPlayer.Id, salary);
-                ChatManager.serverSendMessage(Instance.Translate("salary_msg", GetPrefix(), salary, Configuration.Instance.MoneyName), 
-                    Color.green, 
-                    null, 
-                    steamPlayer, 
-                    EChatMode.GLOBAL, 
-                    null, 
-                    true);
-            }
-
+                    Database.IncreaseBalance(unturnedPlayer.Id, salary);
+                    msgs[steamPlayer] = Instance.Translate("salary_msg", GetPrefix(), salary,
+                        Configuration.Instance.MoneyName);
+                }
+                
+                MainThreadDispatcher.Run(() =>
+                {
+                    foreach (var msg in msgs)
+                    {
+                        try
+                        {
+                            ChatManager.serverSendMessage(msg.Value,
+                                Color.green,
+                                null,
+                                msg.Key,
+                                EChatMode.GLOBAL,
+                                null,
+                                true);
+                        } catch { /* ignored */ }
+                    }
+                });
+            });
 
             _lastUpdate = DateTime.Now.AddMinutes(1);
         }
